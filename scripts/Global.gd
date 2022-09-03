@@ -21,6 +21,27 @@ func init_primary_key():
 
 func init_dict():
 	init_window_size()
+	dict.aktion = {}
+	dict.aktion.tag = {
+		"Tide": "Easy",
+		"Pressure": "Heavy",
+		"Echo": "Heavy",
+		"Frost": "All",
+		"Heat": "All",
+		"Caprice": "Easy",
+		"Fetter": "Heavy",
+		"Hunger": "All",
+		"Satiety": "All",
+		"Mark": "Easy"
+	}
+	dict.aktion.group = {
+		"Easy": ["Wind","Fire","Storm","Plant"],
+		"Heavy": ["Auqa","Earth","Ice","Lava"],
+		"Inert": ["Earth","Ice"],
+		"Agile": ["Wind","Storm"],
+		"Sanative": ["Auqa","Plant"],
+		"Pushy": ["Fire","Lava"]
+	}
 
 func init_window_size():
 	dict.window_size = {}
@@ -35,6 +56,7 @@ func init_arr():
 	arr.sequence["A000124"] = [7, 11, 16] #, 22, 29, 37, 46, 56, 67, 79, 92, 106, 121, 137, 154, 172, 191, 211]
 	arr.sequence["A001358"] = [4, 6, 9, 10, 14, 15, 21, 22, 25, 26]
 	
+	arr.element = ["Auqa","Wind","Fire","Earth","Ice","Strom","Lava","Plant"]
 	arr.bestie = []
 	arr.aktion = []
 
