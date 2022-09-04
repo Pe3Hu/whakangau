@@ -1,11 +1,18 @@
 extends Node
 
 
-class Stammbaum:
+class Scherbe:
+	var num = {}
 	var obj = {}
+	var data = {}
 	
-	func _init():
-		obj.owner = null
+	func _init(input_):
+		num.index = Global.num.primary_key.scherbe
+		Global.num.primary_key.scherbe += 1
+		obj.bestie = null
+		data.sin = input_.sin
+		data.credo = input_.credo
+		data.particle = null#prefix suffix affix
 
 class Aktion:
 	var num = {}
