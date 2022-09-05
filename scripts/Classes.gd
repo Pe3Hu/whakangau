@@ -1,46 +1,70 @@
 extends Node
 
 
+class Particle:
+	var num = {}
+	var data = {}
+	var key = {}
+
+	func _init(input_):
+		key.type = input_.type
+		data.name = data.name
+		num.index = input_.index
+
 class Scherbe:
 	var num = {}
 	var obj = {}
 	var data = {}
-	
+	var arr = {}
+
 	func _init(input_):
 		num.index = Global.num.primary_key.scherbe
 		Global.num.primary_key.scherbe += 1
 		obj.bestie = null
+		data.animal = input_.animal
 		data.sin = input_.sin
 		data.credo = input_.credo
-		data.particle = null#prefix suffix affix
+		arr.particle = input_.particles#prefix suffix root
 
 class Aktion:
 	var num = {}
 	var data = {}
-	
+	var arr = {}
+	var obj = {}
+
 	func _init(input_):
-		num.index = Global.num.primary_key.bestie
-		Global.num.primary_key.bestie += 1
-		num.tempo = input_.tempo
-		data.who = input_.who
-		data.what = input_.what
-		data.how = input_.how
+		obj.bestie = input_.bestie
+		data.type = input_.type
+		obj.root = input_.root
+		arr.prefix = input_.prefix
+		arr.affix = input_.affix
+		data.target = input_.target
 
 class Bestie:
 	var num = {}
 	var arr = {}
 	var data = {}
 	var obj = {}
+	var dict = {}
 	
-	func _init():
+	func _init(input_):
 		num.index = Global.num.primary_key.bestie
 		Global.num.primary_key.bestie += 1
+		data.animal = input_.animal
 		num.hp = {}
 		num.hp.max = 100
 		num.hp.current = num.hp.max
+		num.stance = {}
+		num.stance.base = input_.stance
+		num.stance.current = input_.stance
+		num.stance.min = 1
+		num.stance.max = 12
 		arr.aktion = []
+		arr.scherbe = []
 		obj.kampf = null
 		obj.aktion = null
+		set_basic_knowledges()
+		recalc_knowledges()
 
 	func add_aktion(aktion_):
 		arr.aktion.append(aktion_)
@@ -54,7 +78,7 @@ class Bestie:
 		match obj.aktion.data.what:
 			"hp":
 				target_.shift_hp(obj.aktion.data.how)
-	
+
 	func shift_hp(how_):
 		var shfit = int(how_)
 		num.hp.current += shfit
@@ -64,6 +88,37 @@ class Bestie:
 			obj.kampf.arr.corpse.append(self)
 			obj.kampf.arr.bestie.erase(self)
 			print(self,"dead")
+
+	func set_basic_knowledges():
+		dict.prefix = {}
+		dict.affix = {}
+		dict.root = {}
+		
+		for key in Global.dict.particle.prefix.keys():
+			var indexs = []
+			
+			match key:
+				"change tempo":
+					indexs = [0,9]
+				"rest":
+					indexs = [0]
+				"overheat":
+					indexs = [0]
+				"change stance":
+					indexs = [2,3]
+			
+			dict.prefix[key] = indexs
+
+	func recalc_knowledges():
+		set_basic_knowledges()
+		
+		for scherbe in arr.scherbe:
+			for particle in scherbe.arr.particle:
+				if dict[particle.key.type].keys().has(particle.data.name):
+					if !dict[particle.key.type][particle.data.name].keys().has(particle.num.index):
+						dict[particle.key.type][particle.data.name].append(particle.num.index)
+				else:
+					dict[particle.key.type][particle.data.name] = [particle.num.index]
 
 class Kampf:
 	var num = {}

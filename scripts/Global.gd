@@ -11,7 +11,6 @@ var flag = {}
 
 func init_num():
 	init_primary_key()
-	
 	num.size = {}
 
 func init_primary_key():
@@ -33,7 +32,9 @@ func init_dict():
 		"Fetter": "Heavy",
 		"Hunger": "All",
 		"Satiety": "All",
-		"Mark": "Easy"
+		"Mark": "Easy",
+		"Unrestraint": "Easy",
+		"Onus": "Heavy"
 	}
 	dict.aktion.group = {
 		"All": ["Auqa","Wind","Fire","Earth","Ice","Storm","Lava","Plant"],
@@ -46,21 +47,21 @@ func init_dict():
 	}
 	dict.sin = {}
 	dict.sin.animal = {
-		"Pride": ["Lion","Eagle"],
-		"Envy": ["Snake","Monkey"],
-		"Avarice": ["Raven","Squirrel"],
-		"Wrath": ["Rhino","Aper"],
-		"Gluttony": ["Bear","Wolf"],
-		"Lust": ["Rabbit","Rat"],
-		"Indolence": ["Elephant","Panda"]
+		"Pride": ["Lion","Eagle","Deer"],
+		"Envy": ["Snake","Lemur","Jackal","Parrot"],
+		"Avarice": ["Raven","Squirrel","Fox","Lynx"],
+		"Wrath": ["Hippo","Aper","Gorilla","Grizzly","Croc"],
+		"Gluttony": ["Bear","Wolf","Rhino","Horse"],
+		"Lust": ["Rabbit","Rat","Cheetah","Macaque"],
+		"Indolence": ["Elephant","Panda","Donkey"]
 	}
 	dict.sin.tendency = {
 		"Pride": ["Pressure","Pushy"],
 		"Envy": ["Mark","Agile"],
-		"Avarice": ["Echo","Agile"],
+		"Avarice": ["Echo","Agile","Onus"],
 		"Wrath": ["Tide","Heat","Pushy"],
 		"Gluttony": ["Hunger","Satiety","Sanative"],
-		"Lust": ["Caprice","Sanative"],
+		"Lust": ["Caprice","Sanative","Unrestraint"],
 		"Indolence": ["Frost","Fetter","Inert"]
 	}
 	dict.credo = {}
@@ -80,23 +81,8 @@ func init_dict():
 		"Berserk": ["Heavy","Agile"],
 		"Mauler": ["All","Pushy"],
 	}
-	dict.credo.tendency = {
-		"Bastion": ["Heavy","Inert"],
-		"Fountain": ["All","Sanative"],
-		"Shadow": ["Easy","Agile"],
-		"Duelist": ["Easy","Pushy"],
-		"Reaper": ["All","Sanative"],
-		"Demolisher": ["Heavy","Pushy"],
-		"Executioner": ["Easy","Pushy"],
-		"Berserk": ["Heavy","Agile"],
-		"Mauler": ["All","Pushy"],
-	}
-	dict.prefix = {}
-	dict.prefix = {
-		"All": ["Сhange to easy stand","Сhange to heavy stand","Adrenaline","Respite","Accelerate","Decelerate"]
-	}
-	dict.affix = {}
-	dict.affix = {
+	dict.credo.root = {}
+	dict.credo.root = {
 		"All": ["Barricade","Taunt","Recover","Vanish","Combo"],
 		"Bastion": ["Barricade 2","Taunt 2"],
 		"Fountain": ["Recover 2","Abundance"],
@@ -105,10 +91,10 @@ func init_dict():
 		"Reaper": ["Seed","Harvest"],
 		"Demolisher": ["Compression","Ram"],
 		"Executioner": ["Scaffold","Execution"],
-		"Berserk": ["Rampage","Combo"],
+		"Berserk": ["Rampage","Combo 2"],
 		"Mauler": ["Detour","Bluntly"]
 	}
-	dict.passive = {
+	dict.credo.passive = {
 		"All": ["Emulous","Nimble",
 			"Brave",
 			"Cautious","Stalker",
@@ -127,7 +113,7 @@ func init_dict():
 		"Berserk": [],
 		"Mauler": ["Weakness knowledge"],
 	}
-	dict.counter = {
+	dict.credo.counter = {
 		"All": ["Retribution","Scalp counter","Scalp counter"],
 		"Bastion": ["Steadiness","Block counter"],
 		"Fountain": ["Recovery counter"],
@@ -137,9 +123,76 @@ func init_dict():
 		"Demolisher": [""],
 		"Executioner": ["Scalp counter 3"],
 		"Berserk": ["Injury counter"],
-		"Mauler": ["Weakness knowledge"],
+		"Mauler": ["Weakness counter"],
 	}
-	
+	dict.kin = {}
+	dict.kin.animal = {
+		"Ursidae": ["Bear","Panda","Grizzly"],
+		"Caniformia": ["Wolf","Jackal","Fox"],
+		"Aves": ["Raven","Eagle","Parrot"],
+		"Glires": ["Squirrel","Rabbit","Rat"],
+		"Reptilia": ["Snake","Lizard","Croc"],
+		"Euarchonta": ["Lemur","Gorilla","Macaque"],
+		"Felidae": ["Lion","Lynx","Cheetah"],
+		"Artiodactyla": ["Rhino","Donkey","Horse"],
+		"Perissodactyla": ["Hippo","Aper","Deer"]
+	}
+	dict.kin.fertility = {
+		"Ursidae": 1,
+		"Caniformia": 2,
+		"Aves": 3,
+		"Glires": 5,
+		"Reptilia": 3,
+		"Euarchonta": 1,
+		"Felidae": 2,
+		"Artiodactyla": 1,
+		"Perissodactyla": 1
+	}
+	dict.particle = {}
+	dict.particle.root = {
+		"Barricade": [1],
+		"Barricade 2": [1],
+		"Taunt": [1],
+		"Taunt 2": [1],
+		"Taunt 3": [1],
+		"Recover": [1],
+		"Recover 2": [1],
+		"Vanish": [1],
+		"Vanish 2": [1],
+		"Combo": [1],
+		"Abundance": [1],
+		"Backstab": [1],
+		"Parry": [1],
+		"Seed": [1],
+		"Harvest": [1],
+		"Compression": [1],
+		"Ram": [1],
+		"Scaffold": [1],
+		"Rampage": [1],
+		"Combo 2": [1],
+		"Detour": [1],
+		"Bluntly": [1]
+	}
+	dict.particle.prefix = {
+		"change tempo": [-6,-5,-4,-3,-2,2,3,4,5,6],
+		"rest": [2],
+		"overheat": [2],
+		"change stance": [-4,-2,-1,1,2,4]
+	}
+	dict.particle.suffix = {
+		"Tide": [1],
+		"Pressure": [1],
+		"Echo": [1],
+		"Frost": [-1],
+		"Heat": [1],
+		"Caprice": [1],
+		"Fetter": [1],
+		"Hunger": [1],
+		"Satiety": [1],
+		"Mark": [1],
+		"Unrestraint": [1],
+		"Onus": [-1]
+	}
 
 func init_window_size():
 	dict.window_size = {}
