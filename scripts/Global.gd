@@ -83,16 +83,16 @@ func init_dict():
 	}
 	dict.credo.root = {}
 	dict.credo.root = {
-		"All": ["Barricade","Taunt","Recover","Vanish","Combo"],
+		"All": ["Barricade","Taunt","Recover","Vanish","LifeSteal","Rampage","Critical"], #,"Phase"
 		"Bastion": ["Barricade 2","Taunt 2"],
 		"Fountain": ["Recover 2","Abundance"],
 		"Shadow": ["Vanish 2","Backstab"],#Ambush
 		"Duelist": ["Taunt 3","Parry"],
-		"Reaper": ["Seed","Harvest"],
+		"Reaper": ["Seed","Harvest", "LifeSteal 2"],
 		"Demolisher": ["Compression","Ram"],
 		"Executioner": ["Scaffold","Execution"],
-		"Berserk": ["Rampage","Combo 2"],
-		"Mauler": ["Detour","Bluntly"]
+		"Berserk": ["Rampage 2"],
+		"Mauler": ["Detour","Bluntly","Critical 2"]
 	}
 	dict.credo.passive = {
 		"All": ["Emulous","Nimble",
@@ -209,6 +209,7 @@ func init_arr():
 	
 	arr.element = ["Auqa","Wind","Fire","Earth","Ice","Strom","Lava","Plant"]
 	arr.sin = ["Pride","Envy","Avarice","Wrath","Gluttony","Lust","Indolence"]
+	arr.strategy = ["Liquidator","Balancer","Prepper"]
 	arr.bestie = []
 	arr.aktion = []
 
