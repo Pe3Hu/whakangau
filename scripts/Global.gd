@@ -193,6 +193,11 @@ func init_dict():
 		"Unrestraint": [1],
 		"Onus": [-1]
 	}
+	dict.target = {}
+	dict.target.myself = {
+		true: ["Barricade","Taunt","Recover","Vanish"],
+		false: ["LifeSteal","Rampage","Critical"]
+	}
 
 func init_window_size():
 	dict.window_size = {}
@@ -226,3 +231,39 @@ func _ready():
 	init_arr()
 	init_node()
 	init_flag()
+
+#множество элементов
+#размер сочетаний
+func combine(array_, k_):
+	var n = array_.size() - 1 #максимальный индекс массива элементов
+	var m = k_ - 1 #максимальный индекс массива-маски сочетания
+	var finds = [] #массив всех возможных осчетаний
+	var mask = [] #маска сочетания
+	var finish = false
+	var counter = 0
+	
+	for _i in k_:
+		mask.append(array_[_i])
+		
+	while !finish && counter < 10:
+		counter+=1
+		finish = true
+		var arr_ = []
+		arr_.append_array(mask)
+		
+		if !finds.has(arr_):
+			finds.append(arr_) #записываем сочетание в массив
+			
+		for _i in k_:
+			#print(mask[m - _i], array_[n - _i])
+			if mask[m - _i] != array_[n - _i]:
+				#проверяем, остались ли еще сочетания
+				finish = false
+				var p = array_.find(mask[m - _i])
+				p += 1
+				mask[m - _i] = array_[p] #изменяем маску, начиная с последнего элемента
+				for _j in range(m - _i + 1, k_):
+					p += 1
+					mask[_j] = array_[p]
+				break
+	return finds

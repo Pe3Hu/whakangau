@@ -55,56 +55,11 @@ func init_jagdgebiet():
 		Global.obj.jagdgebiet.add_bestie(bestie)
 	
 	Global.obj.jagdgebiet.add_kampf()
-	#Global.obj.jagdgebiet.arr.kampf[0].init_act()
+	Global.obj.jagdgebiet.arr.kampf[0].init_act()
 
 func _ready():
 	init_besties()
 	init_jagdgebiet()
-	f2()
-
-func f2():
-	var array = ['a', 'b', 'c', 'd', 'e']
-	var k = 2
-
-	var combinations = combine2(array, k)
-	#print(combinations)
-
-#множество элементов
-#размер сочетаний
-func combine2(array, k):
-	var n = array.size() - 1 #максимальный индекс массива элементов
-	var m = k - 1 #максимальный индекс массива-маски сочетания
-	var finds = [] #массив всех возможных осчетаний
-	var mask = [] #маска сочетания
-	var finish = false
-	var counter = 0
-	
-	for _i in k:
-		mask.append(array[_i])
-		
-	while !finish && counter < 10:
-		print(counter,mask)
-		counter+=1
-		finish = true
-		var arr_ = []
-		arr_.append_array(mask)
-		
-		if !finds.has(arr_):
-			finds.append(arr_) #записываем сочетание в массив
-			
-		for _i in k:
-			#print(mask[m - _i], array[n - _i])
-			if mask[m - _i] != array[n - _i]:
-				#проверяем, остались ли еще сочетания
-				finish = false
-				var p = array.find(mask[m - _i])
-				p += 1
-				mask[m - _i] = array[p] #изменяем маску, начиная с последнего элемента
-				for _j in range(m - _i + 1, k):
-					p += 1
-					mask[_j] = array[p]
-				break
-	return finds
 
 func _input(event):
 	if event is InputEventMouseButton:

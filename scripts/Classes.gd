@@ -31,6 +31,7 @@ class Aktion:
 	var data = {}
 	var arr = {}
 	var obj = {}
+	var flag = {}
 
 	func _init(input_):
 		obj.bestie = input_.bestie
@@ -39,6 +40,7 @@ class Aktion:
 		arr.prefix = input_.prefixs
 		arr.suffix = input_.suffixs
 		num.stance = obj.bestie.num.stance.current
+		set_myself()
 
 	func add_target(target_):
 		data.target = target_
@@ -108,6 +110,30 @@ class Aktion:
 					value *= 2
 		
 		return value
+
+	func set_myself():
+		flag.myself = false
+		var flags = []
+		
+		for root in arr.root:
+			for flag in Global.dict.target.myself.keys():
+				if Global.dict.target.myself[flag].has(root):
+					flags.append(flag)
+					
+		
+		for flag_ in flags:
+			flag.myself = flag.myself && flag_
+
+class Rate:
+	var num = {}
+	var obj = {}
+	
+	func _init(input_):
+		obj.aktion = input_.aktion
+		obj.target = input_.target
+		
+		for strategy in Global.arr.strategy:
+			 num[strategy] = 0
 
 class Alveola:
 	var num = {}
@@ -189,6 +215,7 @@ class Bestie:
 		num.threat.current = 0
 		arr.aktion = []
 		arr.scherbe = []
+		arr.rate = []
 		obj.kampf = null
 		obj.aktion = null
 		obj.nucleus = Classes.Nucleus.new()
@@ -197,46 +224,13 @@ class Bestie:
 		set_basic_knowledges()
 		recalc_knowledges()
 
-	func choose_aktion():
+	func prepare_aktions():
 		arr.aktion = []
-		var aktions = []
 		
-		#for target in obj.kampf.arr.bestie:
 		for alveola in obj.nucleus.arr.alveola:
-			var roots = []
-			var prefixs = []
-			var suffixs = []
-			
-			for _r in alveola.num.root:
-				var counter = 0
-				var options = []
-				var roots_ = []
-				options.append_array(dict.root.keys())
-				
-				while counter <= _r && options.size() > 0:
-					var root = options.pop_front()
-					roots_.append(root)
-					counter += 1
-			
-			for _p in alveola.num.prefix:
-				var counter = 0
-				var options = []
-				options.append_array(dict.prefix.keys())
-			
-				while counter <= _p && options.size() > 0:
-					var prefix = options.pop_front()
-					prefixs.append(prefix)
-					counter += 1
-			
-			for _s in alveola.num.suffix:
-				var counter = 0
-				var options = []
-				options.append_array(dict.suffix.keys())
-				
-				while counter <= _s && options.size() > 0:
-					var suffix = options.pop_front()
-					suffixs.append(suffix)
-					counter += 1
+			var roots = Global.combine(dict.root.keys(),alveola.num.root)
+			var prefixs = Global.combine(dict.prefix.keys(),alveola.num.prefix)
+			var suffixs = Global.combine(dict.suffix.keys(),alveola.num.suffix)
 				
 				
 			for roots_ in roots:
@@ -248,13 +242,29 @@ class Bestie:
 						input.prefixs = prefixs_
 						input.suffixs = suffixs_
 						var aktion = Classes.Aktion.new(input)
-						aktions.append(aktion)
-	
-			print(alveola.num,roots,prefixs,suffixs)
+						arr.aktion.append(aktion)
 			
 		Global.rng.randomize()
 		var index_r = Global.rng.randi_range(0, arr.aktion.size()-1)
-		#obj.aktion = arr.aktion[index_r]
+
+	func rate_aktion():
+		for aktion in arr.aktion:
+			for target in obj.kampf.arr.bestie:
+				var flag = target == self
+			
+				if aktion.flag.myself == flag:
+					var input = {}
+					input.target = target
+					input.aktion = aktion
+					var rate = Classes.Rate.new(input)
+					arr.rate.append(rate)
+		
+		for rate in arr.rate:
+			print(rate.obj.target,rate.obj.aktion)
+
+	func choose_aktion():
+		prepare_aktions()
+		rate_aktion()
 
 	func implement_aktion(target_):
 		var value = obj.aktion.do_root()
