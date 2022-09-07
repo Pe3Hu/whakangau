@@ -198,6 +198,10 @@ func init_dict():
 		true: ["Barricade","Taunt","Recover","Vanish"],
 		false: ["LifeSteal","Rampage","Critical"]
 	}
+	dict.strategy = {}
+	dict.strategy.kill = ["Liquidator","Balancer",]
+	dict.strategy.threat = ["Kamikaze","Prepper"]
+	dict.strategy.mana = ["Spender","Miser"]
 
 func init_window_size():
 	dict.window_size = {}
@@ -214,7 +218,7 @@ func init_arr():
 	
 	arr.element = ["Auqa","Wind","Fire","Earth","Ice","Strom","Lava","Plant"]
 	arr.sin = ["Pride","Envy","Avarice","Wrath","Gluttony","Lust","Indolence"]
-	arr.strategy = ["Liquidator","Balancer","Prepper"]
+	
 	arr.bestie = []
 	arr.aktion = []
 
@@ -267,3 +271,19 @@ func combine(array_, k_):
 					mask[_j] = array_[p]
 				break
 	return finds
+
+func get_avg(array_):
+	var avg = 0
+	
+	for obj_ in array_:
+		avg += obj_.value/array_.size()
+	
+	return avg
+
+func get_dispersion(array_, avg_):
+	var dispersion = 0
+	
+	for obj_ in array_:
+		dispersion += pow(obj_.value-avg_,2)/array_.size()
+	
+	return dispersion

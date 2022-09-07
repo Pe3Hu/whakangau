@@ -39,11 +39,7 @@ class Aktion:
 		arr.root = input_.roots
 		arr.prefix = input_.prefixs
 		arr.suffix = input_.suffixs
-		num.stance = obj.bestie.num.stance.current
-		set_myself()
-
-	func add_target(target_):
-		data.target = target_
+		num.stance = obj.bestie.num.stance
 
 	func get_rate():
 		var strategy = {}
@@ -77,6 +73,30 @@ class Aktion:
 		
 		return strategy
 
+	func get_charge():
+		var grade = 1
+		var charge = obj.bestie.num.stance.current * grade
+		
+		match obj.root.data.name:
+			"Barricade":
+				pass
+			"Taunt":
+				pass
+			"Recover":
+				num.threat.current = charge
+			"Vanish":
+				obj.bestie.num.threat.current -= charge
+				charge = 0
+			"LifeSteal":
+				obj.bestie.num.hp.current += charge / 3
+			"Rampage":
+				obj.bestie.num.hp.current -= charge / 2
+				charge *= 2
+			"Critical":
+				var crit = 15
+		
+		return charge
+
 	func do_root():
 		var grade = 1
 		var value = obj.bestie.num.stance.current * grade
@@ -84,32 +104,28 @@ class Aktion:
 		match obj.root.data.name:
 			"Barricade":
 				obj.bestie.num.wall.current += value
-				value = 0
 			"Taunt":
 				obj.bestie.num.threat.current += value
-				value = 0
 			"Recover":
 				obj.bestie.num.hp.current += value
 				
 				if obj.bestie.num.hp.current > obj.bestie.num.hp.max:
 					obj.bestie.num.hp.current = obj.bestie.num.hp.max
-				value = 0
 			"Vanish":
 				obj.bestie.num.threat.current -= value
-				value = 0
 			"LifeSteal":
 				obj.bestie.num.hp.current += value / 3
 			"Rampage":
 				obj.bestie.num.hp.current -= value / 2
-				value *= 2
 			"Critical":
 				var crit = 15
 				Global.rng.randomize()
 				var rand_i = Global.rng.randi_range(0, 99)
+				
 				if rand_i < crit:
 					value *= 2
-		
-		return value
+				
+				obj.bestie.num.hp.current -= value
 
 	func set_myself():
 		flag.myself = false
@@ -119,21 +135,65 @@ class Aktion:
 			for flag in Global.dict.target.myself.keys():
 				if Global.dict.target.myself[flag].has(root):
 					flags.append(flag)
-					
 		
 		for flag_ in flags:
 			flag.myself = flag.myself && flag_
 
 class Rate:
 	var num = {}
+	var dict = {}
 	var obj = {}
 	
 	func _init(input_):
 		obj.aktion = input_.aktion
 		obj.target = input_.target
 		
-		for strategy in Global.arr.strategy:
-			 num[strategy] = 0
+		for key in Global.dict.strategy.keys():
+			dict[key] = {}
+			
+			for strategy in Global.dict.strategy[key]:
+				 dict[key][strategy] = 0
+		
+		get_value()
+	
+	func get_value():
+		var kampf = obj.aktion.obj.bestie.obj.kampf
+		var time = obj.aktion.obj.bestie.num.stance.current
+		var nearest_time = 0
+		
+		for time_ in dict.afterhit.keys():
+			if time_ > nearest_time && time_ <= time:
+				nearest_time = time_
+		
+		var hps = []
+		hps.append_array(dict.afterhit[nearest_time].hps)
+		
+		for hp in hps:
+			if hp.bestie == obj.target:
+				hp.value +=  obj.aktion
+
+class Buff:
+	var num = {}
+	var obj = {}
+	var data = {}
+	
+	func _init(input_):
+		obj.bestie = input_.bestie
+		data.name = input_.name
+		num.value = input_.value
+		num.time = input_.time
+		give()
+
+	func give():
+		match data.name:
+			"Vanish":
+				obj.bestie.num.threat.current += num.value
+
+	func withdraw():
+		if num.time <= 0:
+			match data.name:
+				"Vanish":
+					obj.bestie.num.threat.current += num.value
 
 class Alveola:
 	var num = {}
@@ -170,24 +230,26 @@ class Nucleus:
 				arr.alveola.append(alveola)
 
 class Gehirn:
-	var num = {}
+	var dict = {}
 
 	func _init():
 		roll()
 
 	func roll():
-		for strategy in Global.arr.strategy:
-			 num[strategy] = 1
+		for key in Global.dict.strategy.keys():
+			dict[key] = {}
+			var value = 12
+
+			for strategy in Global.dict.strategy[key]:
+				dict[key][strategy] = 1
+				value -= 1
 		
-		var value = 9
-		
-		while value > 0:
-			var keys = num.keys()
-			Global.rng.randomize()
-			var index_r = Global.rng.randi_range(0, keys.size()-1)
-			num[keys[index_r]] += 1
-			value -= 1
-		print(num)
+			while value > 0:
+				var strategys = Global.dict.strategy[key]
+				Global.rng.randomize()
+				var index_r = Global.rng.randi_range(0, strategys.size()-1)
+				dict[key][strategys[index_r]] += 1
+				value -= 1
 
 class Bestie:
 	var num = {}
@@ -195,14 +257,14 @@ class Bestie:
 	var data = {}
 	var obj = {}
 	var dict = {}
-	
+
 	func _init(input_):
 		num.index = Global.num.primary_key.bestie
 		Global.num.primary_key.bestie += 1
 		data.animal = input_.animal
 		num.hp = {}
 		num.hp.max = 100
-		num.hp.current = num.hp.max
+		num.hp.current = num.hp.max - Global.num.primary_key.bestie * 5
 		num.wall = {}
 		num.wall.current = 0
 		num.stance = {}
@@ -216,6 +278,7 @@ class Bestie:
 		arr.aktion = []
 		arr.scherbe = []
 		arr.rate = []
+		arr.visitor = []
 		obj.kampf = null
 		obj.aktion = null
 		obj.nucleus = Classes.Nucleus.new()
@@ -247,7 +310,7 @@ class Bestie:
 		Global.rng.randomize()
 		var index_r = Global.rng.randi_range(0, arr.aktion.size()-1)
 
-	func rate_aktion():
+	func rate_aktions():
 		for aktion in arr.aktion:
 			for target in obj.kampf.arr.bestie:
 				var flag = target == self
@@ -264,7 +327,7 @@ class Bestie:
 
 	func choose_aktion():
 		prepare_aktions()
-		rate_aktion()
+		#rate_aktions()
 
 	func implement_aktion(target_):
 		var value = obj.aktion.do_root()
@@ -317,6 +380,15 @@ class Bestie:
 		arr.scherbe.append(scherbe_)
 		recalc_knowledges()
 
+	func get_afterhit_hp(time_):
+		var afterhit = num.hp.current
+		
+		for visitor in arr.visitor:
+			if visitor.time < time_:
+				afterhit -= visitor.hp
+		
+		return afterhit
+
 class Kampf:
 	var num = {}
 	var arr = {}
@@ -332,14 +404,32 @@ class Kampf:
 		num.size.bestie = 6
 		arr.bestie = []
 		arr.corpse = []
+		arr.tareget = []
 		flag.full = false
 		flag.act = false
 		dict.timeline = {}
+		dict.afterhit = {}
 		num.timeskip = 0
 		num.time = 0
+		num.avg = -1
+		num.dispersion = -1
+
+	func get_nums():
+		var array = []
+		
+		for bestie in arr.bestie:
+			var obj_ = {}
+			obj_.value = bestie.num.hp.current
+			obj_.bestie = bestie
+			array.append(obj_)
+			
+		num.avg = Global.get_avg(array)
+		num.dispersion = Global.get_dispersion(array, num.avg)
 
 	func init_act():
 		dict.timeline = {}
+		get_nums()
+		sort_targets()
 		
 		for bestie in arr.bestie:
 			bestie.choose_aktion()
@@ -354,6 +444,23 @@ class Kampf:
 			dict.timeline[aktion.num.stance].append(bestie_)
 		else:
 			dict.timeline[aktion.num.stance] = [bestie_]
+	
+	func calc_afterhits():
+		dict.afterhit = {}
+		
+		for time in dict.timeline.keys():
+			dict.afterhit[time] = {}
+			dict.afterhit[time].hps = []
+			
+			for bestie in arr.bestie:
+				var hp = {}
+				hp.value = bestie.get_afterhit_hp(time)
+				hp.bestie = bestie
+				dict.afterhit[time].hps.append(hp)
+				
+			dict.afterhit[time].hps.sort_custom(Sorter, "sort_ascending")
+			dict.afterhit[time].avg = Global.get_avg(dict.afterhit[time].hps)
+			dict.afterhit[time].dispersion = Global.get_dispersion(dict.afterhit[time].hps, dict.afterhit[time].avg)
 
 	func act():
 		if arr.bestie.size() > 1:
@@ -361,7 +468,7 @@ class Kampf:
 				move_timeline()
 				
 				for bestie in dict.timeline[0]:
-					var target = find_target(bestie) 
+					var target = {}
 					bestie.implement_aktion(target)
 					bestie.choose_aktion()
 					add_to_timeline(bestie)
@@ -382,23 +489,25 @@ class Kampf:
 		num.timeskip = 0
 		num.time = 0
 
-	func find_target(bestie_):
-		var options = []
+	func sort_targets():
+		arr.tareget = []
+		
+#		for strategy in Global.arr.strategy:
+#			if strategy != "Prepper":
+#				dict.tareget[strategy] = []
+#				match strategy:
+#					"Liquidator":
+#						options.sort_custom(self, "sort_ascending")
+#					"Balancer":
+#						options.sort_custom(self, "sort_descending")
 		
 		for bestie in arr.bestie:
-			if bestie != bestie_:
-				var option = {}
-				option.value = bestie.num.hp.current
-				option.bestie = bestie
-				options.append(option)
+			var target = {}
+			target.value = bestie.num.hp.current
+			target.bestie = bestie
+			arr.tareget.append(target)
 		
-		match bestie_.obj.aktion.num.stance:
-			"low hp":
-				options.sort_custom(self, "sort_ascending")
-		
-		Global.rng.randomize()
-		var index_r = Global.rng.randi_range(0, options.size()-1)
-		return options[index_r].bestie
+		arr.tareget.sort_custom(Sorter, "sort_ascending")
 
 	func add_bestie(bestie_):
 		arr.bestie.append(bestie_)
