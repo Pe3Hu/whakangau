@@ -40,6 +40,10 @@ class Aktion:
 		arr.prefix = input_.prefixs
 		arr.suffix = input_.suffixs
 		num.stance = obj.bestie.num.stance
+		num.time = {}
+		num.time.cast = obj.bestie.num.stance.current
+		num.time.completion = obj.bestie.obj.kampf.num.time.current + num.time.cast
+		obj.target = null
 
 	func get_rate():
 		var strategy = {}
@@ -101,31 +105,34 @@ class Aktion:
 		var grade = 1
 		var value = obj.bestie.num.stance.current * grade
 		
-		match obj.root.data.name:
-			"Barricade":
-				obj.bestie.num.wall.current += value
-			"Taunt":
-				obj.bestie.num.threat.current += value
-			"Recover":
-				obj.bestie.num.hp.current += value
-				
-				if obj.bestie.num.hp.current > obj.bestie.num.hp.max:
-					obj.bestie.num.hp.current = obj.bestie.num.hp.max
-			"Vanish":
-				obj.bestie.num.threat.current -= value
-			"LifeSteal":
-				obj.bestie.num.hp.current += value / 3
-			"Rampage":
-				obj.bestie.num.hp.current -= value / 2
-			"Critical":
-				var crit = 15
-				Global.rng.randomize()
-				var rand_i = Global.rng.randi_range(0, 99)
-				
-				if rand_i < crit:
-					value *= 2
-				
-				obj.bestie.num.hp.current -= value
+		for root in arr.root:
+			value = obj.bestie.num.stance.current * grade
+			
+			match root.data.name:
+				"Barricade":
+					obj.bestie.num.wall.current += value
+				"Taunt":
+					obj.bestie.num.threat.current += value
+				"Recover":
+					obj.bestie.num.hp.current += value
+					
+					if obj.bestie.num.hp.current > obj.bestie.num.hp.max:
+						obj.bestie.num.hp.current = obj.bestie.num.hp.max
+				"Vanish":
+					obj.bestie.num.threat.current -= value
+				"LifeSteal":
+					obj.bestie.num.hp.current += value / 3
+				"Rampage":
+					obj.bestie.num.hp.current -= value / 2
+				"Critical":
+					var crit = 15
+					Global.rng.randomize()
+					var rand_i = Global.rng.randi_range(0, 99)
+					
+					if rand_i < crit:
+						value *= 2
+		
+		obj.target.shift_hp(-value)
 
 	func set_myself():
 		flag.myself = false
@@ -138,6 +145,15 @@ class Aktion:
 		
 		for flag_ in flags:
 			flag.myself = flag.myself && flag_
+
+	func calc_effect():
+		var effect = {}
+		effect.hp = obj.bestie.num.stance.current
+		effect.threat = 0
+		return effect
+
+	func set_target(target_):
+		obj.target = target_
 
 class Rate:
 	var num = {}
@@ -225,9 +241,10 @@ class Nucleus:
 				var alveola = Classes.Alveola.new(input)
 				arr.alveola.append(alveola)
 				
-				input.root = 1
-				alveola = Classes.Alveola.new(input)
-				arr.alveola.append(alveola)
+#				input.root = 1
+#				alveola = Classes.Alveola.new(input)
+#				arr.alveola.append(alveola)
+				pass
 
 class Gehirn:
 	var dict = {}
@@ -275,7 +292,10 @@ class Bestie:
 		num.threat = {}
 		num.threat.base = 0
 		num.threat.current = 0
-		arr.aktion = []
+		arr.aktion = {}
+		arr.aktion.past = []
+		arr.aktion.future = []
+		arr.aktion.option = []
 		arr.scherbe = []
 		arr.rate = []
 		arr.visitor = []
@@ -288,13 +308,15 @@ class Bestie:
 		recalc_knowledges()
 
 	func prepare_aktions():
-		arr.aktion = []
+		arr.aktion = {}
+		arr.aktion.past = []
+		arr.aktion.future = []
+		arr.aktion.option = []
 		
 		for alveola in obj.nucleus.arr.alveola:
 			var roots = Global.combine(dict.root.keys(),alveola.num.root)
 			var prefixs = Global.combine(dict.prefix.keys(),alveola.num.prefix)
 			var suffixs = Global.combine(dict.suffix.keys(),alveola.num.suffix)
-				
 				
 			for roots_ in roots:
 				for prefixs_ in prefixs:
@@ -305,13 +327,12 @@ class Bestie:
 						input.prefixs = prefixs_
 						input.suffixs = suffixs_
 						var aktion = Classes.Aktion.new(input)
-						arr.aktion.append(aktion)
-			
-		Global.rng.randomize()
-		var index_r = Global.rng.randi_range(0, arr.aktion.size()-1)
+						arr.aktion.option.append(aktion)
+		
+		pass
 
 	func rate_aktions():
-		for aktion in arr.aktion:
+		for aktion in arr.aktion.option:
 			for target in obj.kampf.arr.bestie:
 				var flag = target == self
 			
@@ -327,13 +348,17 @@ class Bestie:
 
 	func choose_aktion():
 		prepare_aktions()
+		
+		Global.rng.randomize()
+		var index_r = Global.rng.randi_range(0, arr.aktion.size()-1)
+		#print(arr.aktion)
+		
+		obj.aktion = arr.aktion.option[0]
+		obj.aktion.set_target(obj.kampf.arr.bestie[0])
 		#rate_aktions()
 
-	func implement_aktion(target_):
-		var value = obj.aktion.do_root()
-		
-		if value > 0:
-			target_.shift_hp(value)
+	func implement_aktion():
+		obj.aktion.do_root()
 
 	func shift_hp(value_):
 		var shfit = int(value_)
@@ -341,8 +366,8 @@ class Bestie:
 		print(self,num.hp.current)
 		
 		if num.hp.current <= 0:
-			obj.kampf.arr.corpse.append(self)
-			obj.kampf.arr.bestie.erase(self)
+			#obj.kampf.arr.corpse.append(self)
+			#obj.kampf.arr.bestie.erase(self)
 			print(self,"dead")
 
 	func set_basic_knowledges():
@@ -389,105 +414,65 @@ class Bestie:
 		
 		return afterhit
 
-class Kampf:
-	var num = {}
-	var arr = {}
-	var flag = {}
-	var dict = {}
+	func add_to_future(aktion_):
+		arr.aktion.future.append(aktion_)
+
+	func remove_to_past(aktion_):
+		arr.aktion.past.append(aktion_)
+		arr.aktion.future.erase(aktion_)
+
+class Nachbild:
 	var obj = {}
-	
+	var num = {}
+
 	func _init(input_):
-		obj.jagdgebiet = input_.jagdgebiet
-		num.index = Global.num.primary_key.kampf
-		Global.num.primary_key.kampf += 1
-		num.size = {}
-		num.size.bestie = 6
-		arr.bestie = []
-		arr.corpse = []
-		arr.tareget = []
-		flag.full = false
-		flag.act = false
-		dict.timeline = {}
-		dict.afterhit = {}
-		num.timeskip = 0
-		num.time = 0
-		num.avg = -1
-		num.dispersion = -1
+		obj.bestie = input_.bestie
+		num.time = input_.time
+		get_nums()
 
 	func get_nums():
-		var array = []
+		num.hp = obj.bestie.num.hp.current
+		num.threat = obj.bestie.num.threat.current
+		var timeshift = num.time - obj.bestie.obj.kampf.num.time.current
 		
-		for bestie in arr.bestie:
-			var obj_ = {}
-			obj_.value = bestie.num.hp.current
-			obj_.bestie = bestie
-			array.append(obj_)
-			
-		num.avg = Global.get_avg(array)
-		num.dispersion = Global.get_dispersion(array, num.avg)
+		for aktion in obj.bestie.arr.aktion.future:
+			if aktion.num.time.cast < timeshift:
+				var result = aktion.calc_effect()
+				num.hp += result.hp
+				num.threat += result.threat
 
-	func init_act():
-		dict.timeline = {}
-		get_nums()
+class Scheibe:
+	var num = {}
+	var arr = {}
+	var obj = {}
+
+	func _init(input_):
+		obj.kampf = input_.kampf
+		num.time = input_.time
+		recalc()
+
+	func recalc():
+		arr.alive = []
+		arr.corpse = []
+		init_besties()
 		sort_targets()
-		
-		for bestie in arr.bestie:
-			bestie.choose_aktion()
-			#add_to_timeline(bestie)
-		
-		#get_timeskip()
+		get_nums()
 
-	func add_to_timeline(bestie_):
-		var aktion = bestie_.obj.aktion
-		
-		if dict.timeline.keys().has(aktion.num.stance):
-			dict.timeline[aktion.num.stance].append(bestie_)
-		else:
-			dict.timeline[aktion.num.stance] = [bestie_]
-	
-	func calc_afterhits():
-		dict.afterhit = {}
-		
-		for time in dict.timeline.keys():
-			dict.afterhit[time] = {}
-			dict.afterhit[time].hps = []
+	func init_besties():
+		for bestie in obj.kampf.arr.bestie: 
+			var input = {}
+			input.bestie = bestie
+			input.time = num.time
+			var nachbild = Classes.Nachbild.new(input)
 			
-			for bestie in arr.bestie:
-				var hp = {}
-				hp.value = bestie.get_afterhit_hp(time)
-				hp.bestie = bestie
-				dict.afterhit[time].hps.append(hp)
-				
-			dict.afterhit[time].hps.sort_custom(Sorter, "sort_ascending")
-			dict.afterhit[time].avg = Global.get_avg(dict.afterhit[time].hps)
-			dict.afterhit[time].dispersion = Global.get_dispersion(dict.afterhit[time].hps, dict.afterhit[time].avg)
+			if nachbild.num.hp > 0:
+				arr.alive.append(nachbild)
+			else:
+				arr.corpse.append(nachbild)
 
-	func act():
-		if arr.bestie.size() > 1:
-			if num.timeskip == num.time:
-				move_timeline()
-				
-				for bestie in dict.timeline[0]:
-					var target = {}
-					bestie.implement_aktion(target)
-					bestie.choose_aktion()
-					add_to_timeline(bestie)
-				dict.timeline.erase(0)
-				get_timeskip()
-
-	func get_timeskip():
-		num.timeskip = dict.timeline.keys().min()
-
-	func move_timeline():
-		var new_timeline = {}
-		
-		for key in dict.timeline.keys():
-			var shifted_time = key - num.timeskip 
-			new_timeline[shifted_time] = dict.timeline[key]
-		
-		dict.timeline = new_timeline
-		num.timeskip = 0
-		num.time = 0
+	func get_nums():
+		num.avg = Global.get_avg(arr.tareget)
+		num.dispersion = Global.get_dispersion(arr.tareget, num.avg)
 
 	func sort_targets():
 		arr.tareget = []
@@ -501,13 +486,89 @@ class Kampf:
 #					"Balancer":
 #						options.sort_custom(self, "sort_descending")
 		
-		for bestie in arr.bestie:
-			var target = {}
-			target.value = bestie.num.hp.current
-			target.bestie = bestie
-			arr.tareget.append(target)
+		for alive in arr.alive:
+			var obj_ = {}
+			obj_.value = alive.num.hp
+			obj_.bestie = alive.obj.bestie
+			arr.tareget.append(obj_)
 		
 		arr.tareget.sort_custom(Sorter, "sort_ascending")
+
+class Kampf:
+	var num = {}
+	var arr = {}
+	var flag = {}
+	var dict = {}
+	var obj = {}
+	
+	func _init(input_):
+		obj.jagdgebiet = input_.jagdgebiet
+		num.index = Global.num.primary_key.kampf
+		Global.num.primary_key.kampf += 1
+		num.size = {}
+		num.size.bestie = 6
+		num.time = {}
+		num.time.skip = 0
+		num.time.current = 0
+		arr.bestie = []
+		arr.tareget = []
+		flag.full = false
+		flag.act = false
+		dict.timeline = {}
+
+	func init_act():
+		dict.timeline = {}
+		
+		for bestie in arr.bestie:
+			bestie.choose_aktion()
+			add_to_timeline(bestie)
+		
+		get_timeskip()
+
+	func add_to_timeline(bestie_):
+		var aktion = bestie_.obj.aktion
+		#var target = aktion.obj.target
+		var target = arr.bestie[0]
+		target.add_to_future(aktion)
+		var time = num.time.current + aktion.num.time.cast
+		
+		if dict.timeline.keys().has(time):
+			dict.timeline[time].recalc()
+		else:
+			var input = {}
+			input.kampf = self
+			input.time = time
+			dict.timeline[time] = Classes.Scheibe.new(input)
+
+	func act():
+		if arr.bestie[0].num.hp.current > 0:#arr.bestie.size() > 1:
+			print(num.time.current, dict.timeline)
+			if num.time.skip == num.time.current:
+				
+				for nachbild in dict.timeline[num.time.current].arr.alive:
+					var bestie = nachbild.obj.bestie
+					if bestie.obj.aktion.num.time.completion == num.time.current:
+						
+						var target = bestie.obj.aktion.obj.target
+						bestie.implement_aktion()
+						bestie.choose_aktion()
+						add_to_timeline(bestie)
+					dict.timeline.erase(num.time.skip)
+				get_timeskip()
+
+	func get_timeskip():
+		num.time.skip = dict.timeline.keys().min()
+
+	func move_timeline():
+		var new_timeline = {}
+		
+		for key in dict.timeline.keys():
+			var shifted_time = key - num.time.skip 
+			new_timeline[shifted_time] = dict.timeline[key]
+		
+		dict.timeline = new_timeline
+		num.timeskip = 0
+		num.time = 0
 
 	func add_bestie(bestie_):
 		arr.bestie.append(bestie_)

@@ -78,6 +78,5 @@ func _on_Timer_timeout():
 		Global.node.TimeBar.value -= Global.node.TimeBar.max_value
 	
 	for kampf in Global.obj.jagdgebiet.arr.kampf:
-		kampf.num.time += 1
-		#print(kampf.num.time)
+		kampf.num.time.current += 1
 		kampf.act()
